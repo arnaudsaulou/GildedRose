@@ -1,89 +1,58 @@
-import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class InnTest {
 
-    private Inn innTest;
-    private ArrayList<Item> items;
-
-    @Before
-    public void initializer() {
-        this.innTest = new Inn();
-
-        items = new ArrayList<>();
-        items.add(new Item("+5 Dexterity Vest", 10, 20));
-        items.add(new Item("Aged Brie", 2, 0));
-        items.add(new Item("Elixir of the Mongoose", 5, 7));
-        items.add(new Item("Sulfuras, Hand of Ragnaros", 0, 80));
-        items.add(new Item("Backstage passes to a TAFKAL80ETC concert", 15, 20));
-        items.add(new Item("Conjured Mana Cake", 3, 6));
+    @Test
+    public void should_list_items() {
+        Inn innTest = new Inn();
+        assertThat(innTest.getItems()).extracting("name").containsExactly(
+                "+5 Dexterity Vest",
+                "Aged Brie",
+                "Elixir of the Mongoose",
+                "Sulfuras, Hand of Ragnaros",
+                "Backstage passes to a TAFKAL80ETC concert",
+                "Conjured Mana Cake");
+        assertThat(innTest.getItems()).extracting("sellIn").containsExactly(10, 2, 5, 0, 15, 3);
+        assertThat(innTest.getItems()).extracting("quality").containsExactly(20, 0, 7, 80, 20, 6);
     }
 
     @Test
-    public void innTest_should_not_be_empty() {
-        assertTrue(this.innTest.getItems().size() != 0);
+    public void should_update_quality() {
+        Inn innTest = new Inn();
+        innTest.updateQuality();
+
+        assertThat(innTest.getItems()).extracting("name").containsExactly(
+                "+5 Dexterity Vest",
+                "Aged Brie",
+                "Elixir of the Mongoose",
+                "Sulfuras, Hand of Ragnaros",
+                "Backstage passes to a TAFKAL80ETC concert",
+                "Conjured Mana Cake");
+        assertThat(innTest.getItems()).extracting("sellIn").containsExactly(9, 1, 4, 0, 14, 2);
+        assertThat(innTest.getItems()).extracting("quality").containsExactly(19, 1, 6, 80, 21, 5);
     }
 
     @Test
-    public void getItems_should_return_right_item() {
-        for (int i = 0; i < this.items.size(); i++) {
-            assertEquals(this.innTest.getItems().get(i).getName(), this.items.get(i).getName());
-            assertEquals(this.innTest.getItems().get(i).getSellIn(), this.items.get(i).getSellIn());
-            assertEquals(this.innTest.getItems().get(i).getQuality(), this.items.get(i).getQuality());
+    public void should_update_quality_twice() {
+        Inn innTest = new Inn();
+        innTest.updateQuality();
+        innTest.updateQuality();
+
+        assertThat(innTest.getItems()).extracting("sellIn").containsExactly(8, 0, 3, 0, 13, 1);
+        assertThat(innTest.getItems()).extracting("quality").containsExactly(18, 2, 5, 80, 22, 4);
+    }
+
+    @Test
+    public void should_update_quality_100_times() {
+        Inn innTest = new Inn();
+
+        for (int day = 0; day < 100; day++) {
+            innTest.updateQuality();
         }
-    }
 
-    @Test
-    public void sellIn_should_be_decremented() {
-        int sellInOld;
-        int sellInNow;
-
-        for (int i = 0; i < this.innTest.getItems().size(); i++) {
-
-            sellInOld = this.innTest.getItems().get(i).getSellIn();
-            this.innTest.updateQuality();
-            sellInNow = this.innTest.getItems().get(i).getSellIn();
-
-            if (this.innTest.getItems().get(i).getName().equals("Sulfuras, Hand of Ragnaros")) {
-                assertEquals(sellInNow, sellInOld);
-
-            } else {
-                assertEquals(sellInNow, sellInOld - 1);
-            }
-        }
-    }
-
-    @Test
-    public void quality_should_not_be_negative() {
-        for (int i = 0; i < this.innTest.getItems().size(); i++) {
-            for (int qualityPoint = this.innTest.getItems().get(i).getQuality(); qualityPoint > -1; qualityPoint--) {
-                this.innTest.updateQuality();
-            }
-            assertTrue(this.innTest.getItems().get(i).getQuality() >= 0);
-        }
-    }
-
-    @Test
-    public void quality_should_not_be_upper_than_50() {
-        int qualityPoint;
-        for (int i = 0; i < this.innTest.getItems().size(); i++) {
-            qualityPoint = 50 - this.innTest.getItems().get(i).getQuality();
-
-            for (int updatePoint = 0; updatePoint < qualityPoint + 1; updatePoint++) {
-                this.innTest.updateQuality();
-            }
-
-            if (this.innTest.getItems().get(i).getName().equals("Sulfuras, Hand of Ragnaros")) {
-                assertEquals(80, this.innTest.getItems().get(i).getQuality());
-
-            } else {
-                assertTrue(this.innTest.getItems().get(i).getQuality() <= 50);
-            }
-        }
+        assertThat(innTest.getItems()).extracting("sellIn").containsExactly(-90, -98, -95, 0, -85, -97);
+        assertThat(innTest.getItems()).extracting("quality").containsExactly(0, 50, 0, 80, 0, 0);
     }
 }
